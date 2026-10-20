@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Star Courier</title>
+  <meta name="description" content="Star Courier is a browser arcade game: pilot a courier ship, collect energy cores and dodge asteroids and drones across five levels.">
+  <meta name="theme-color" content="#060914">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@700;900&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-state="menu">
+  <canvas id="game" aria-hidden="true"></canvas>
+
+  <header id="hud" class="hud" aria-label="Game status">
+    <div class="hud-group">
+      <div class="stat"><span class="label">Score</span><span id="hud-score" class="value">0</span></div>
+      <div class="stat"><span class="label">Level</span><span id="hud-level" class="value">1/5</span></div>
+    </div>
+    <div class="hud-cores">
+      <div class="cores-text"><span id="hud-cores">0 / 8</span> cores</div>
+      <div class="bar" aria-hidden="true"><div id="hud-bar" class="bar-fill"></div></div>
+    </div>
+    <div class="hud-group">
+      <div class="stat stat-time"><span class="label">Time</span><span id="hud-time" class="value">45</span></div>
+      <div class="stat"><span class="label">Lives</span><span id="hud-lives" class="value lives">♥♥♥</span></div>
+      <button id="btn-pause" class="icon-btn" type="button" aria-label="Pause (P)">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      </button>
+      <button id="btn-mute" class="icon-btn" type="button" aria-label="Mute sound (M)" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/>
+          <path class="when-on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>
+          <path class="when-muted" d="m16 9 6 6m0-6-6 6"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" aria-live="polite">
+    <div id="banner-title" class="banner-title"></div>
+    <div id="banner-sub" class="banner-sub"></div>
+    <div id="banner-tip" class="banner-tip"></div>
+  </div>
+  <div id="combo" class="combo" aria-hidden="true"></div>
+  <button id="btn-dash" class="dash-btn" type="button" aria-label="Dash">Dash</button>
+
+  <section id="screen-start" class="screen" aria-labelledby="title">
+    <div class="panel">
+      <p class="eyebrow">A five-level arcade run</p>
+      <h1 id="title" class="title">Star Courier</h1>
+      <p class="tagline">Grab the glowing energy cores before the clock runs out, and dodge everything else.</p>
+      <div class="howto">
+        <div class="howto-row key-only">
+          <span class="keys"><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>
+          <span>Fly</span>
+        </div>
+        <div class="howto-row key-only">
+          <span class="keys"><kbd class="wide">Space</kbd></span>
+          <span>Dash: a burst of speed that passes through hazards</span>
+        </div>
+        <div class="howto-row key-only">
+          <span class="keys"><kbd>P</kbd> <kbd>M</kbd></span>
+          <span>Pause · Mute</span>
+        </div>
+        <div class="howto-row touch-only">
+          <span class="keys">Drag anywhere</span>
+          <span>Fly</span>
+        </div>
+        <div class="howto-row touch-only">
+          <span class="keys">Dash button</span>
+          <span>A burst of speed that passes through hazards</span>
+        </div>
+      </div>
+      <ul class="legend">
+        <li><i class="dot gold"></i>Cores are worth 10 points. Grab them quickly in a row for up to ×5.</li>
+        <li><i class="dot rock"></i>Asteroids and <i class="dot red"></i>drones cost a life. You have 3.</li>
+        <li><i class="dot cyan"></i>Shield · <i class="dot green"></i>+8 seconds · <i class="dot pink"></i>Extra life</li>
+      </ul>
+      <div class="actions">
+        <button id="btn-start" class="btn primary" type="button" data-primary>Start game</button>
+      </div>
+      <div class="meta">
+        <span>Best score <strong id="start-best">0</strong></span>
+        <button class="link-btn sound-text" type="button">Sound: on</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-pause" class="screen" aria-labelledby="pause-title">
+    <div class="panel small">
+      <h2 id="pause-title" class="screen-title">Paused</h2>
+      <div class="actions column">
+        <button id="btn-resume" class="btn primary" type="button" data-primary>Resume</button>
+        <button id="btn-restart" class="btn ghost" type="button">Restart from level 1</button>
+        <button id="btn-pause-menu" class="btn ghost" type="button">Main menu</button>
+      </div>
+      <div class="meta center">
+        <button class="link-btn sound-text" type="button">Sound: on</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-level" class="screen" aria-labelledby="level-title">
+    <div class="panel small">
+      <p class="eyebrow">Delivery complete</p>
+      <h2 id="level-title" class="screen-title">Level 1 cleared</h2>
+      <div id="level-stats" class="stats"></div>
+      <p id="level-next" class="next-info"></p>
+      <div class="actions column">
+        <button id="btn-next" class="btn primary" type="button" data-primary>Next level</button>
+      </div>
+      <p class="hint">Press Enter to continue</p>
+    </div>
+  </section>
+
+  <section id="screen-end" class="screen" aria-labelledby="end-title">
+    <div class="panel small">
+      <h2 id="end-title" class="screen-title">Game over</h2>
+      <p id="end-reason" class="end-reason"></p>
+      <div class="final">
+        <span class="final-label">Final score</span>
+        <span id="end-score" class="final-score">0</span>
+        <span id="end-new" class="badge" hidden>New best!</span>
+      </div>
+      <div id="end-stats" class="stats"></div>
+      <div class="actions column">
+        <button id="btn-again" class="btn primary" type="button" data-primary>Play again</button>
+        <button id="btn-end-menu" class="btn ghost" type="button">Main menu</button>
+      </div>
+      <p class="hint">Press R to play again</p>
+    </div>
+  </section>
+
+  <script src="js/levels.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
